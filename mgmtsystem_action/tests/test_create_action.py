@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from openerp import exceptions
-from openerp.tests import common
+from odoo import exceptions
+from odoo.tests import common
 from datetime import datetime, timedelta
 
 
