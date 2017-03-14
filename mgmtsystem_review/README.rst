@@ -27,7 +27,7 @@ To use this module, you need to:
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot
-   :target: https://runbot.odoo-community.org/runbot/128/8.0
+   :target: https://runbot.odoo-community.org/runbot/128/10.0
 
 Known issues / Roadmap
 ======================
@@ -44,6 +44,7 @@ Contributors
 * Loïc Faure-Lacroix <loic.lacroix@savoirfairelinux.com>
 * Gervais Naoussi <gervaisnaoussi@gmail.com>
 * Luk Vermeylen <luk@allmas-it.be>
+* Eugen Don <eugen.don@don-systems.de>
 
 Maintainer
 ----------

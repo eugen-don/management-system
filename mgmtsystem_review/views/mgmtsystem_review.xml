@@ -1,6 +1,4 @@
 <odoo>
-    <data>
-
         <!-- Review Lines -->
 
         <record id="view_mgmtsystem_review_line_tree" model="ir.ui.view">
@@ -105,7 +103,7 @@
             <field name="arch" type="xml">
                 <form string="Review">
                     <header>
-                        <button name="button_close" string="Close" states="open" type="object" icon="gtk-jump-to"/>
+                        <button name="button_close" string="Close" states="open" type="object"/>
                         <field name="state" widget="statusbar" select="1" readonly="1"/>
                     </header>
                     <sheet>
@@ -190,5 +188,4 @@
             sequence="50"
             groups="mgmtsystem.group_mgmtsystem_manager"/>
 
-    </data>
 </odoo>
