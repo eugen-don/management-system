@@ -73,6 +73,7 @@ Credits
 Contributors
 ------------
 
+* Eugen Don <eugen.don@don-systems.de>
 * Luk Vermeylen <luk@allmas-it.be>
 * Daniel Reis <dgreis@sapo.pt>
 * Maxime Chambreuil <maxime.chambreuil@savoirfairelinux.com>
