@@ -1,45 +1,58 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2010 Savoir-faire Linux (<http://www.savoirfairelinux.com>).
+# Copyright 2012 Savoir-faire Linux <http://www.savoirfairelinux.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-
-from openerp import models, api, fields, _
+from odoo import models, api, fields, exceptions, _
+from datetime import datetime, timedelta
 
 
 class MgmtsystemNonconformity(models.Model):
 
     _name = "mgmtsystem.nonconformity"
     _description = "Nonconformity"
-    _rec_name = "description"
-    _inherit = ['mail.thread', 'ir.needaction_mixin']
+    _rec_name = "name"
+    _inherit = ['mail.thread']
     _order = "create_date desc"
-
-    def _default_stage(self):
-        """Return the default stage."""
-        return self.env.ref('mgmtsystem_nonconformity.stage_draft')
-
-    @api.model
-    def _stage_groups(self, present_ids, domain, **kwargs):
-        """This method is used by Kanban view to show empty stages."""
-        # perform search
-        # We search here stage objects
-        result = self.env[
-            'mgmtsystem.nonconformity.stage'].search([]).name_get()
-        return result, None
-
-    _group_by_full = {
-        'stage_id': _stage_groups
+    _track = {
+        'field': {
+            'mgmtsystem_nonconformity.subtype_analysis': (
+                lambda s, c, u, o, ctx=None:
+                    o["stage_id"] == "mgmtsystem_nonconformity.stage_draft"
+            ),
+            'mgmtsystem_nonconformity.subtype_pending': (
+                lambda s, c, u, o, ctx=None:
+                    o["stage_id"] == "mgmtsystem_nonconformity.stage_pending"
+            ),
+        },
     }
 
-    # 1. Description
+    @api.model
+    def _default_stage(self):
+        """Return the default stage."""
+        return (
+            self.env.ref('mgmtsystem_nonconformity.stage_draft', False) or
+            self.env['mgmtsystem.nonconformity.stage'].search(
+                [('is_starting', '=', True)],
+                limit=1))
+
+    @api.model
+    def _stage_groups(self, stages, domain, order):
+        stage_ids = self.env['mgmtsystem.nonconformity.stage'].search([])
+        return stage_ids
+
     name = fields.Char('Name')
+    number_of_nonconformities = fields.Integer(
+        '# of nonconformities', readonly=True, default=1)
     ref = fields.Char(
         'Reference',
         required=True,
         readonly=True,
         default="NEW"
     )
-    # Compute data
+    date_deadline = fields.Datetime('Deadline', readonly=False,
+                                    default=fields.Datetime.now())
+    create_date = fields.Datetime('Create Date', readonly=True,
+                                  default=fields.Datetime.now())
     number_of_nonconformities = fields.Integer(
         '# of nonconformities', readonly=True, default=1)
     days_since_updated = fields.Integer(
@@ -51,21 +64,22 @@ class MgmtsystemNonconformity(models.Model):
         compute='_compute_number_of_days_to_close',
         store=True,
         readonly=True)
-    closing_date = fields.Datetime('Closing Date', readonly=True)
-
-    partner_id = fields.Many2one('res.partner', 'Partner', required=True)
+    closing_date = fields.Datetime(
+        'Closing Date',
+        readonly=True,
+        default=lambda self: fields.Datetime.now())
+    cancel_date = fields.Datetime('Cancel Date', readonly=True)
+    partner_id = fields.Many2one('res.partner', 'Partner', required=False)
     reference = fields.Char('Related to')
     responsible_user_id = fields.Many2one(
         'res.users',
         'Responsible',
         required=True,
-        track_visibility=True,
     )
     manager_user_id = fields.Many2one(
         'res.users',
         'Manager',
         required=True,
-        track_visibility=True,
     )
     user_id = fields.Many2one(
         'res.users',
@@ -73,7 +87,13 @@ class MgmtsystemNonconformity(models.Model):
         required=True,
         default=lambda self: self.env.user,
         track_visibility=True,
-        oldname="author_user_id",  # automatic migration
+    )
+    author_user_id = fields.Many2one(
+        'res.users',
+        'Filled in by',
+        required=True,
+        default=lambda self: self.env.user,
+        track_visibility=True
     )
     origin_ids = fields.Many2many(
         'mgmtsystem.nonconformity.origin',
@@ -91,13 +111,16 @@ class MgmtsystemNonconformity(models.Model):
         'Procedure',
     )
     description = fields.Text('Description', required=True)
+
     system_id = fields.Many2one('mgmtsystem.system', 'System')
+
     stage_id = fields.Many2one(
         'mgmtsystem.nonconformity.stage',
         'Stage',
-        track_visibility=True,
+        track_visibility='onchange', index=True,
         copy=False,
-        default=_default_stage)
+        default=_default_stage, group_expand='_stage_groups')
+
     state = fields.Selection(
         related='stage_id.state',
         store=True,
@@ -108,7 +131,7 @@ class MgmtsystemNonconformity(models.Model):
          ('blocked', 'Blocked')],
         'Kanban State',
         default='normal',
-        track_visibility='onchange',
+        track_visibility='onchange', index=True,
         help="A kanban state indicates special situations affecting it:\n"
         " * Normal is the default situation\n"
         " * Blocked indicates something is preventing"
@@ -129,13 +152,17 @@ class MgmtsystemNonconformity(models.Model):
         'mgmtsystem.nonconformity.severity',
         'Severity',
     )
+    priority = fields.Selection([
+            ('0', 'Low'),
+            ('1', 'Normal'),
+            ('2', 'High')
+        ], default='0', index=True)
     analysis = fields.Text('Analysis')
     immediate_action_id = fields.Many2one(
         'mgmtsystem.action',
         'Immediate action',
         domain="[('nonconformity_ids', '=', id)]",
     )
-
     # 3. Action Plan
     action_ids = fields.Many2many(
         'mgmtsystem.action',
@@ -148,8 +175,6 @@ class MgmtsystemNonconformity(models.Model):
         'Action Plan Comments',
         help="Comments on the action plan.",
     )
-
-    # 4. Effectiveness Evaluation
     evaluation_comments = fields.Text(
         'Evaluation Comments',
         help="Conclusions from the last effectiveness evaluation.",
@@ -161,6 +186,7 @@ class MgmtsystemNonconformity(models.Model):
         'Company',
         default=lambda self: self.env.user.company_id.id)
 
+    # Demo data missing fields...
     corrective_action_id = fields.Many2one(
         'mgmtsystem.action',
         'Corrective action',
@@ -173,6 +199,17 @@ class MgmtsystemNonconformity(models.Model):
     )
 
     @api.multi
+    def _track_template(self, tracking):
+        self.ensure_one()
+        res = super(MgmtsystemNonconformity, self)._track_template(tracking)
+        changes, dummy = tracking[self.id]
+        if 'stage_id' in changes and self.stage_id.mail_template_id:
+            res['stage_id'] = (
+                self.stage_id.mail_template_id,
+                {'composition_mode': 'mass_mail'})
+        return res
+
+    @api.multi
     def _get_all_actions(self):
         self.ensure_one()
         return (self.action_ids +
@@ -183,7 +220,7 @@ class MgmtsystemNonconformity(models.Model):
     def _check_open_with_action_comments(self):
         for nc in self:
             if nc.state == 'open' and not nc.action_comments:
-                raise models.ValidationError(
+                raise exceptions.ValidationError(
                     _("Action plan  comments are required "
                       "in order to put a nonconformity In Progress."))
 
@@ -192,14 +229,14 @@ class MgmtsystemNonconformity(models.Model):
         for nc in self:
             if nc.state == 'done':
                 if not nc.evaluation_comments:
-                    raise models.ValidationError(
+                    raise exceptions.ValidationError(
                         _("Evaluation Comments are required "
                           "in order to close a Nonconformity."))
                 actions_are_closed = (
                     x.stage_id.is_ending
                     for x in nc._get_all_actions())
                 if not all(actions_are_closed):
-                    raise models.ValidationError(
+                    raise exceptions.ValidationError(
                         _("All actions must be done "
                           "before closing a Nonconformity."))
 
@@ -257,3 +294,34 @@ class MgmtsystemNonconformity(models.Model):
                         if action.stage_id.is_starting:
                             action.case_open()
         return result
+
+    # method returns url of NC
+    def get_nonconformity_url(self):
+        """Return nonconformity url to be used in email templates."""
+        base_url = self.env['ir.config_parameter'].get_param(
+            'web.base.url',
+            default='http://localhost:8069'
+        )
+        url = ('{}/web#db={}&id={}&model={}').format(
+            base_url,
+            self.env.cr.dbname,
+            self.id,
+            self._name
+        )
+        return url
+
+    @api.model
+    def process_nonconformity_reminder_queue(self, reminder_days=10):
+        """Notify user when we are 10 days close to a deadline."""
+        cur_date = datetime.now().date() + timedelta(days=reminder_days)
+        stage_close = self.env.ref('mgmtsystem_nonconformity.stage_close')
+        nonconformity_ids = self.search(
+            [("stage_id", "!=", stage_close.id),
+             ("action_ids.stage_id", "!=", stage_close.id),
+             ("date_deadline", "=", cur_date),
+             ])
+        template = self.env.ref(
+            'mgmtsystem_nonconformity.nonconformity_email_template_reminder')
+        for nonconformity in nonconformity_ids:
+            template.send_mail(nonconformity.id, force_send=True)
+        return True

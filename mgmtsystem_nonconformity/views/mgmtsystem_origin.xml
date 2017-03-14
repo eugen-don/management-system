@@ -1,8 +1,5 @@
 <odoo>
-  <data>
-
     <!-- Origin -->
-
     <record id="view_mgmtsystem_nonconformity_origin_form" model="ir.ui.view">
       <field name="name">mgmtsystem.nonconformity.origin.form</field>
       <field name="type">form</field>
@@ -55,11 +52,10 @@
       <field name="search_view_id" ref="view_mgmtsystem_nonconformity_origin_filter"/>
     </record>
 
-    <menuitem id="menu_open_nonconformity_origin"
-      action="open_mgmtsystem_nonconformity_origin_list"
-      parent="menu_mgmtsystem_configuration_nonconformities"
-      sequence="20"
+    <menuitem id="menu_open_nonconformity_origin" 
+      action="open_mgmtsystem_nonconformity_origin_list" 
+      parent="menu_mgmtsystem_configuration_nonconformities" 
+      sequence="20" 
       groups="mgmtsystem.group_mgmtsystem_manager"/>
 
-  </data>
 </odoo>

@@ -2,11 +2,19 @@
 # Copyright (C) 2010 Savoir-faire Linux (<http://www.savoirfairelinux.com>).
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import models, fields
+from odoo import api, fields, models
 
 
 class MgmtsystemAction(models.Model):
     _inherit = "mgmtsystem.action"
+
+    @api.model
+    def default_get(self, field_list):
+        """ Set 'date_assign' if user_id is set. """
+        result = super(MgmtsystemAction, self).default_get(field_list)
+        if 'user_id' in result:
+            result['date_assign'] = fields.Datetime.now()
+        return result
 
     nonconformity_immediate_id = fields.One2many(
         'mgmtsystem.nonconformity',

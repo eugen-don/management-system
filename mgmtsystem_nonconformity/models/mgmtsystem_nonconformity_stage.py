@@ -2,17 +2,18 @@
 # Copyright (C) 2010 Savoir-faire Linux (<http://www.savoirfairelinux.com>).
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import models, fields, _
-
+from odoo import models, fields, _
 
 _STATES = [
     ('draft', _('Draft')),
-    ('analysis', _('Analysis')),
-    ('pending', _('Action Plan')),
+    ('analysis', _('Analysis & Planing')),
+    ('pending', _('Pending Approval')),
     ('open', _('In Progress')),
+    ('evaluation', _('In Evaluation')),
     ('done', _('Closed')),
     ('cancel', _('Cancelled')),
 ]
+_STATES_DICT = dict(_STATES)
 
 
 class MgmtsystemNonconformityStage(models.Model):
@@ -21,12 +22,61 @@ class MgmtsystemNonconformityStage(models.Model):
     _description = "Nonconformity Stages"
     _order = 'sequence'
 
+    def _get_mail_template_id_domain(self):
+        return [('model', '=', 'mgmtsystem.nonconformity')]
+
+    def _state_name(self):
+        res = dict()
+        for o in self:
+            res[o.id] = _STATES_DICT.get(o.state, o.state)
+        return res
+
     name = fields.Char('Stage Name', required=True, translate=True)
     sequence = fields.Integer(
-        'Sequence', help="Used to order states. Lower is better.", default=100)
+        'Sequence', help="Used to order states. Lower is better.", default=1)
     state = fields.Selection(
         _STATES,
         'State',
-        readonly=True,
+        readonly=False,
         default="draft",
     )
+    state_name = fields.Char(
+        compute='_state_name',
+        string='State Description',)
+    description = fields.Text(translate=True)
+    legend_priority = fields.Char(
+        string='Priority Management Explanation', translate=True,
+        help="Explanation text to help users using the star and priority\n"
+             "mechanism on stages or nonconformities that are in this stage.")
+    legend_blocked = fields.Char(
+        string='Kanban Blocked Explanation', translate=True,
+        help="Override the default value displayed \n"
+             "for the blocked state for kanban selection,\n"
+             "when the action or nonconformity is in that stage.")
+    legend_done = fields.Char(
+        string='Kanban Valid Explanation', translate=True,
+        help="Override the default value displayed for the done state for \n"
+             "kanban selection, when the action or nonconformity \n"
+             "is in that stage.")
+    legend_normal = fields.Char(
+        string='Kanban Ongoing Explanation', translate=True,
+        help="Override the default value displayed for the normal state\n"
+             "for kanban selection, when the action or nonconformity\n"
+             "is in that stage.")
+    mail_template_id = fields.Many2one(
+        'mail.template',
+        string='Email Template',
+        domain=lambda self: self._get_mail_template_id_domain(),
+        help="If set an email will be sent either to the responsible person\n"
+             "or / and the manager when the Action or Nonconformity \n"
+             "reaches this stage. By selecting the right template \n"
+             "and clicking on the edit button at the right\n"
+             "you can customize the email template for this stage.")
+    fold = fields.Boolean(
+        string='Folded in Kanban',
+        help="This stage is folded in the kanban view when there are \n"
+             "no records in that stage to display.")
+    is_starting = fields.Boolean(
+        string='Is starting Stage',
+        help="select stis checkbox if this is the default stage \n"
+             "for new nonconformities")
