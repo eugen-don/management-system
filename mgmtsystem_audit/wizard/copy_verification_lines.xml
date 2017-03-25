@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <odoo>
-    <data>
         <record id="copy_verification_lines_form_view" model="ir.ui.view">
             <field name="name">copy.verification.lines.form</field>
             <field name="model">copy.verification.lines</field>
@@ -22,5 +21,4 @@
                 target="new"
                 key2="client_action_multi"
                 id="copy_verification_lines_act_window"/>
-    </data>
 </odoo>

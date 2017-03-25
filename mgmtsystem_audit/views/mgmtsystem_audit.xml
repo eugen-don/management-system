@@ -1,6 +1,4 @@
 <odoo>
-    <data>
-
         <!-- Verification Lines -->
 
         <record id="view_mgmtsystem_verification_line_tree" model="ir.ui.view">
@@ -110,7 +108,7 @@
             <field name="arch" type="xml">
                 <form string="Audit" version="7.0">
                     <header>
-                        <button name="button_close" string="Close" states="open" type="object" icon="gtk-jump-to"/>
+                        <button name="button_close" string="Close" states="open" type="object"/>
                         <field name="state" widget="statusbar" select="1" readonly="1"/>
                     </header>
                     <sheet string="Audit">
@@ -195,5 +193,4 @@
             </field>
         </record>
 
-    </data>
 </odoo>
