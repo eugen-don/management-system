@@ -12,7 +12,6 @@ Configuration
 Users must be added to the appropriate groups within openERP as follows:
 
 * Creators: Settings > Users > Groups > Management System / User
-* Responsible Persons: Settings > Users > Groups > Management System / Approving User
 
 Usage
 =====
@@ -44,7 +43,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/OCA/management-system/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us smashing it by providing a detailed and welcomed feedback
-`here <https://github.com/OCA/management-system/issues/new?body=module:%20mgmtsystem_audit%0Aversion:%208.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`here <https://github.com/OCA/management-system/issues/new?body=module:%20mgmtsystem_audit%0Aversion:%2010.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 
 Credits
@@ -62,6 +61,7 @@ Contributors
 * Gervais Naoussi <gervaisnaoussi@gmail.com>
 * Luk Vermeylen <luk@allmas-it.be>
 * Maxime Chambreuil <mchambreuil@ursainfosystems.com>
+* Eugen Don <eugen.don@don-systems.de>
 
 Maintainer
 ----------
