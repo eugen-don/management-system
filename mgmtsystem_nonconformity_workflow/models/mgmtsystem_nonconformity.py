@@ -10,6 +10,7 @@ from odoo.tools import (
 )
 import time
 
+
 class MgmtsystemNonconformity(models.Model):
 
     _inherit = ['mgmtsystem.nonconformity']
