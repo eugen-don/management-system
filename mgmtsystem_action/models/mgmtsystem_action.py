@@ -178,8 +178,9 @@ class MgmtsystemAction(models.Model):
 
     @api.multi
     def send_mail_for_action(self, action):
-        template = self.env.ref('mgmtsystem_action.email_template_new_action_reminder')
-        self.env['mail.template'].browse(template.id).send_mail(action.id, force_send=True)
+        template = self.env.ref(
+            'mgmtsystem_action.email_template_new_action_reminder')
+        self.env['mail.template'].browse(template.id).send_mail(action.id)
 
     def get_action_url(self):
         """Return action url to be used in email templates."""
@@ -206,5 +207,5 @@ class MgmtsystemAction(models.Model):
         template = self.env.ref(
             'mgmtsystem_action.action_email_template_reminder_action')
         for action in action_ids:
-            self.env['mail.template'].browse(template.id).send_mail(action.id, force_send=True)
+            self.env['mail.template'].browse(template.id).send_mail(action.id)
         return True
