@@ -116,7 +116,7 @@ class TestModelAction(common.TransactionCase):
             "type_action": "immediate",
         })
         stage_ids = self.env['mgmtsystem.action.stage'].search([])
-        stages_found = record.stage_id.browse()
+        stages_found = record.stage_id.browse([0-9])
         state = (len(stage_ids) == len(stages_found[0]))
         self.assertTrue(state)
 
