@@ -109,17 +109,6 @@ class TestModelAction(common.TransactionCase):
         })
         self.assertTrue(record.process_reminder_queue())
 
-    def test_stage_groups(self):
-        """Check if stage_groups return all stages."""
-        record = self.env['mgmtsystem.action'].create({
-            "name": "SampleAction",
-            "type_action": "immediate",
-        })
-        stage_ids = self.env['mgmtsystem.action.stage'].search([])
-        stages_found = record.stage_id.browse([0-9])
-        state = (len(stage_ids) == len(stages_found[0]))
-        self.assertTrue(state)
-
     def test_send_mail(self):
         """Check if mail send action work."""
         record = self.env['mgmtsystem.action'].create({
