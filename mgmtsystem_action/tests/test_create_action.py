@@ -120,6 +120,7 @@ class TestModelAction(common.TransactionCase):
         state = (len(stage_ids) == len(stages_found[]))
         self.assertTrue(state)
 
+
     def test_send_mail(self):
         """Check if mail send action work."""
         record = self.env['mgmtsystem.action'].create({
