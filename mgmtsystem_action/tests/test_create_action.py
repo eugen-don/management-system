@@ -115,9 +115,9 @@ class TestModelAction(common.TransactionCase):
             "name": "SampleAction",
             "type_action": "immediate",
         })
-        stage_ids = self.env['mgmtsystem.action.stage'].search_count([])
-        stages_found = record._stage_groups(self, record, stage_ids)
-        state = (stage_ids == len(stages_found[0]))
+        stage_ids = self.env['mgmtsystem.action.stage'].search([])
+        stages_found = record.stage_id.search_count([])
+        state = (len(stage_ids) == len(stages_found[0]))
         self.assertTrue(state)
 
     def test_send_mail(self):
