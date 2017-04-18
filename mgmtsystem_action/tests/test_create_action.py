@@ -109,14 +109,14 @@ class TestModelAction(common.TransactionCase):
         })
         self.assertTrue(record.process_reminder_queue())
 
-    def test_stage_groups(self, stages, domain, order):
+    def test_stage_groups(self):
         """Check if stage_groups return all stages."""
         record = self.env['mgmtsystem.action'].create({
             "name": "SampleAction",
             "type_action": "immediate",
         })
-        stage_ids = self.env['mgmtsystem.action.stage'].browse([0])
-        stages_found = record._stage_groups(stages, domain, order)
+        stage_ids = self.env['mgmtsystem.action.stage'].search([])
+        stages_found = record._stage_groups()
         state = (len(stage_ids) == len(stages_found[0]))
         self.assertFalse(state)
 
